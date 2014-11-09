@@ -75,66 +75,64 @@ lastword('.').
 lastword('!').
 lastword('?').
 
-noun --> [apple].
-noun --> [apples].
-noun --> [boy].
-noun --> [boys].
-noun --> [girl].
-noun --> [girls].
-noun --> [government].
-noun --> [governments].
-noun --> [watermelon].
-noun --> [watermelons].
-noun --> [person].
-noun --> [people].
-det --> [a].
-det --> [an].
-det --> [the].
-det --> [the].
-det --> [any].
-det --> [any].
-det --> [all].
-det --> [some].
-det --> [some].
-verb --> [conscript].
-verb --> [conscripts].
-verb --> [likes].
-verb --> [like].
-verb --> [run].
-verb --> [runs].
-beverb --> [is].
-beverb --> [are].
-adj --> [evil].
-adj --> [big].
-rel --> [that].
-rel --> [whom].
-rel --> [who].
-rel --> [which].
-rel --> [whose].
-rel --> [when].
-rel --> [when].
-rel --> [where].
-rel --> [where].
-rel --> [why].
-rel --> [why].
+noun(noun(apple),s) --> [apple].
+noun(noun(apples),p) --> [apples].
+noun(noun(boy),s) --> [boy].
+noun(noun(boys),p) --> [boys].
+noun(noun(girl),s) --> [girl].
+noun(noun(girls),p) --> [girls].
+noun(noun(government),s) --> [government].
+noun(noun(governments),p) --> [governments].
+noun(noun(watermelon),s) --> [watermelon].
+noun(noun(watermelons),p) --> [watermelons].
+noun(noun(person),s) --> [person].
+noun(noun(people),p) --> [people].
+det(det(a),s) --> [a].
+det(det(an),s) --> [an].
+det(det(the),_) --> [the].
+det(det(any),_) --> [any].
+det(det(all),p) --> [all].
+det(det(some),_) --> [some].
+verb(verb(conscript),p) --> [conscript].
+verb(verb(conscropts),s) --> [conscripts].
+verb(verb(likes),s) --> [likes].
+verb(verb(like),p) --> [like].
+verb(verb(run),p) --> [run].
+verb(verb(runs),s) --> [runs].
+beverb(beVerb(is),s) --> [is].
+beverb(beVerb(are),p) --> [are].
+adj(adj(evil)) --> [evil].
+adj(adj(big)) --> [big].
+rel(relcl(that),s) --> [that].
+rel(relcl(whom),s) --> [whom].
+rel(relcl(who),p) --> [who].
+rel(relcl(which),p) --> [which].
+rel(relcl(whose),s) --> [whose].
+rel(relcl(when),_) --> [when].
+rel(relcl(where),_) --> [where].
+rel(relcl(why),_) --> [why].
 end --> [.].
 end --> [?].
 end --> [!].
 
 
+sent(_) :-
+  read_in(S0),
+  s(T,S0,[]).
+  
+s(s(NP,VP)) --> np(NP,Num), vp(VP,Num), sf.
 
-s --> np, vp, sf.
+np(np(DET,N),Num) --> det(DET,Num), noun(N,Num).
+np(np(DET,N,R),Num) --> det(DET,Num), noun(N,Num), relcl(R,Num).
+np(np(N),Num) --> noun(N,Num).
 
-np --> det, noun.
-np --> det, noun, relcl.
-np --> noun.
+vp(vp(V,NP),Num) --> verb(V,Num), np(NP,_).
+vp(vp(BEV,A),Num) --> beverb(BEV,Num), adj(A).
+vp(vp(V),Num) --> verb(V,Num).
 
-vp --> verb, np.
-vp --> beverb, adj.
-vp --> verb.
-
-relcl --> rel, np, verb, np.
-relcl --> rel, vp.
-relcl --> rel, np, verb.
+%test for first relcl cus it might not work because of NP2
+relcl(relcl(R,NP,V,NP2),Num) --> rel(R,Num), np(NP,Num), verb(V,Num), np(NP2,_).
+relcl(relcl(R,VP),Num) --> rel(R,Num), vp(VP,Num).
+relcl(relcl(R,NP,V),Num) --> rel(R,Num), np(NP,Num), verb(V,Num).
 
 sf --> end.
