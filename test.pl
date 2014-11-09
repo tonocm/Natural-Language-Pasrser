@@ -87,12 +87,12 @@ noun(noun(watermelon),s) --> [watermelon].
 noun(noun(watermelons),p) --> [watermelons].
 noun(noun(person),s) --> [person].
 noun(noun(people),p) --> [people].
-det(det(a),s) --> [a].
-det(det(an),s) --> [an].
-det(det(the),_) --> [the].
-det(det(any),_) --> [any].
-det(det(all),p) --> [all].
-det(det(some),_) --> [some].
+det(determinant(a),s) --> [a].
+det(determinant(an),s) --> [an].
+det(determinant(the),_) --> [the].
+det(determinant(any),_) --> [any].
+det(determinant(all),p) --> [all].
+det(determinant(some),_) --> [some].
 verb(verb(conscript),p) --> [conscript].
 verb(verb(conscropts),s) --> [conscripts].
 verb(verb(likes),s) --> [likes].
@@ -103,36 +103,36 @@ beverb(beVerb(is),s) --> [is].
 beverb(beVerb(are),p) --> [are].
 adj(adj(evil)) --> [evil].
 adj(adj(big)) --> [big].
-rel(relcl(that),s) --> [that].
-rel(relcl(whom),s) --> [whom].
-rel(relcl(who),p) --> [who].
-rel(relcl(which),p) --> [which].
-rel(relcl(whose),s) --> [whose].
-rel(relcl(when),_) --> [when].
-rel(relcl(where),_) --> [where].
-rel(relcl(why),_) --> [why].
+rel(relatve(that),s) --> [that].
+rel(relative(whom),s) --> [whom].
+rel(relative(who),p) --> [who].
+rel(relative(which),p) --> [which].
+rel(relative(whose),s) --> [whose].
+rel(relative(when),_) --> [when].
+rel(relative(where),_) --> [where].
+rel(relative(why),_) --> [why].
 end --> [.].
 end --> [?].
 end --> [!].
 
 
-sent(_) :-
+sent(X) :-
   read_in(S0),
-  s(T,S0,[]).
+  s(X,S0,[]).
   
-s(s(NP,VP)) --> np(NP,Num), vp(VP,Num), sf.
+s(sentence(NP,VP)) --> np(NP,Num), vp(VP,Num), sf.
 
-np(np(DET,N),Num) --> det(DET,Num), noun(N,Num).
-np(np(DET,N,R),Num) --> det(DET,Num), noun(N,Num), relcl(R,Num).
-np(np(N),Num) --> noun(N,Num).
+np(noun_phrase(DET,N),Num) --> det(DET,Num), noun(N,Num).
+np(noun_phrase(DET,N,R),Num) --> det(DET,Num), noun(N,Num), relcl(R,Num).
+np(noun_phrase(N),Num) --> noun(N,Num).
 
-vp(vp(V,NP),Num) --> verb(V,Num), np(NP,_).
-vp(vp(BEV,A),Num) --> beverb(BEV,Num), adj(A).
-vp(vp(V),Num) --> verb(V,Num).
+vp(verb_phrase(V,NP),Num) --> verb(V,Num), np(NP,_).
+vp(verb_phrase(BEV,A),Num) --> beverb(BEV,Num), adj(A).
+vp(verb_phrase(V),Num) --> verb(V,Num).
 
 %test for first relcl cus it might not work because of NP2
-relcl(relcl(R,NP,V,NP2),Num) --> rel(R,Num), np(NP,Num), verb(V,Num), np(NP2,_).
-relcl(relcl(R,VP),Num) --> rel(R,Num), vp(VP,Num).
-relcl(relcl(R,NP,V),Num) --> rel(R,Num), np(NP,Num), verb(V,Num).
+relcl(rel_clause(R,NP,V,NP2),Num) --> rel(R,Num), np(NP,Num), verb(V,Num), np(NP2,_).
+relcl(rel_clause(R,VP),Num) --> rel(R,Num), vp(VP,Num).
+relcl(rel_clause(R,NP,V),Num) --> rel(R,Num), np(NP,Num), verb(V,Num).
 
 sf --> end.
