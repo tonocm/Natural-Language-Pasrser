@@ -133,7 +133,8 @@ sent(X) :-
   read_in(S0),
   %S0 = [all,boys,like,some,girls,'.'],
   s(X,S0,[]),
-  %write(X),
+  write(X),
+  nl,
   tr_s(X,Y,1),
   write(Y).
 
