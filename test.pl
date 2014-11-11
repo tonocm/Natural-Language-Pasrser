@@ -76,34 +76,36 @@ lastword('!').
 lastword('?').
 
 noun(noun(apple),s) --> [apple].
-noun(noun(apples),p) --> [apples].
+noun(noun(apple),p) --> [apples].
 noun(noun(boy),s) --> [boy].
-noun(noun(boys),p) --> [boys].
+noun(noun(boy),p) --> [boys].
 noun(noun(girl),s) --> [girl].
-noun(noun(girls),p) --> [girls].
+noun(noun(girl),p) --> [girls].
 noun(noun(government),s) --> [government].
-noun(noun(governments),p) --> [governments].
+noun(noun(government),p) --> [governments].
 noun(noun(watermelon),s) --> [watermelon].
-noun(noun(watermelons),p) --> [watermelons].
+noun(noun(watermelon),p) --> [watermelons].
 noun(noun(person),s) --> [person].
-noun(noun(people),p) --> [people].
-det(determinant(a),s) --> [a].
-det(determinant(an),s) --> [an].
-det(determinant(the),_) --> [the].
-det(determinant(any),_) --> [any].
-det(determinant(all),p) --> [all].
-det(determinant(some),_) --> [some].
+noun(noun(person),p) --> [people].
+det(determiner(a),s) --> [a].
+det(determiner(an),s) --> [an].
+det(determiner(all),p) --> [all].
+det(determiner(the),_) --> [the].
+det(determiner(any),_) --> [any].
+det(determiner(all),p) --> [all].
+det(determiner(some),_) --> [some].
 verb(verb(conscript),p) --> [conscript].
-verb(verb(conscropts),s) --> [conscripts].
-verb(verb(likes),s) --> [likes].
+verb(verb(conscript),s) --> [conscripts].
+verb(verb(like),s) --> [likes].
 verb(verb(like),p) --> [like].
 verb(verb(run),p) --> [run].
-verb(verb(runs),s) --> [runs].
-beverb(beVerb(is),s) --> [is].
-beverb(beVerb(are),p) --> [are].
-adj(adj(evil)) --> [evil].
-adj(adj(big)) --> [big].
-rel(relatve(that),s) --> [that].
+verb(verb(run),s) --> [runs].
+beverb(be(is),s) --> [is].
+beverb(be(is),p) --> [are].
+adj(adjective(evil)) --> [evil].
+adj(adjective(big)) --> [big].
+adj(adjective(delicious)) --> [delicious].
+rel(relatve(that),_) --> [that].
 rel(relative(whom),s) --> [whom].
 rel(relative(who),p) --> [who].
 rel(relative(which),p) --> [which].
@@ -115,15 +117,143 @@ end --> [.].
 end --> [?].
 end --> [!].
 
+glue([all],'=>','all(x').
+glue([some],'& ','exists(x').
+
 
 sent(X) :-
   read_in(S0),
-  s(X,S0,[]).
+  %S0 = [all,boys,like,some,girls,'.'],
+  s(X,S0,[]),
+  write(X),
+  nl,
+  tr_s(X,Y,1),
+  write(Y).
+
+tr_s(X,Y,Var) :-
+  X =.. List,
+  append([sentence],[NP,VP],List),
+  tr_np(NP,Y1,Var,Glue),
+  tr_vp(VP,Y2,Var),
+  atom_concat(Y1,' ',Temp),
+  atom_concat(Temp,Glue,Temp1),
+  atom_concat(Temp1,' ',Temp2),
+  atom_concat(Temp2,Y2,Temp3),
+  atom_concat(Temp3,')',Y).
+
+tr_vp(VP,Y,Var) :-
+  VP =.. List,
+  append([verb_phrase],[V],List),
+  tr_verb(V,Y1,Var),
+  atom_concat(Y1,')',Y).
+
+tr_vp(VP,Y,Var) :-
+  VP =.. List,
+  append([verb_phrase],[BE,ADJ],List),
+  tr_adj(ADJ,Y,Var).
+
+tr_adj(ADJ,Y,Var) :-
+  ADJ =.. List,
+  append([adjective],[Ad],List),
+  atom_concat(Ad,'(x',Temp),
+  atom_concat(Temp,Var,Temp2),
+  atom_concat(Temp2,')',Y).
+
+tr_vp(VP,Y,Var) :-
+  VP =.. List,
+  append([verb_phrase],[V,NP],List),
+  tr_verb(V,Y1,Var),
+  Var2 is Var+1,
+  tr_np(NP,Y2,Var2,_),%anonymous variable instead of Glue
+  atom_concat(Y1,', ',Temp),
+  atom_concat(Temp,Y2,Temp2),
+  atom_concat(Temp2,'))',Y).                             
+
+tr_verb(V,Y,Var) :-
+  V =.. List,
+  append([verb],[Verb],List),
+  atom_concat(Verb,'(x',Temp),
+  atom_concat(Temp,Var,Y).
+
+tr_np(NP,Y,Var,Glue) :-
+  NP =.. List,
+  append([noun_phrase],[DET,Noun],List),
+  tr_det(DET,Y1,Var,Glue),
+  tr_noun(Noun,Y2,Var),
+  atom_concat(Y1,Y2,Y).
+
+tr_np(NP,Y,Var,Glue) :-
+  NP =.. List,
+  append([noun_phrase],[Det,Adj,Noun],List),
+  tr_det(Det,Y1,Var,Glue),
+  tr_adj(Adj,Y2,Var),
+  tr_noun(Noun,Y3,Var),
+  atom_concat(Y1,Y2,Temp),
+  atom_concat(Temp,'& ',Temp2),
+  atom_concat(Temp2,Y3,Y).
+
+tr_np(NP,Y,Var,Glue) :-
+  NP =.. List,
+  append([noun_phrase],[Det,Noun,Relcl],List),
+  tr_det(Det,Y1,Var,Glue),
+  tr_noun(Noun,Y2,Var),
+  tr_relcl(Relcl,Y3,Var),
+  atom_concat(Y1,Y2,Temp),
+  atom_concat(Temp,'& ',Temp2),
+  atom_concat(Temp2,Y3,Y).
+
+tr_det(DET,Y,Var,Glue) :-
+  DET =.. List,
+  append([determiner],Out,List),
+  glue(Out,Glue,Y2),
+  atom_concat(Y2,Var,Y3),
+  atom_concat(Y3,', ',Y).
+
+tr_adj(Adj,Y,Var) :-
+  Adj =.. List,
+  append([adjective],[Adjective],List),
+  atom_concat(Adjective,'(x',Temp),
+  atom_concat(Temp,Var,Temp2),
+  atom_concat(Temp2,')',Y).
   
+tr_noun(N,Y,Var) :-
+  N =.. List,
+  append([noun],[Noun],List),
+  atom_concat(Noun,'(x',Temp),
+  atom_concat(Temp,Var,Temp2),
+  atom_concat(Temp2,')',Y).
+
+tr_rel('&').
+  
+
+%tr_vp(VP,Y,Var) :-
+
+tr_relcl(Relcl,Y,Var) :-
+  Relcl =.. List,
+  append([rel_clause],[Rel,VP],List),
+  tr_rel(Y1).
+  tr_vp(VP,Y2,Var),
+  atom_concat(Y1,Y2,Y).
+
+tr_relcl(Relcl,Y,Var) :-
+  Relcl =.. List,
+  append([rel_clause],[Rel,NP,V],List),
+  tr_rel(Y1),
+  Var2 is Var + 1,
+  tr_np(NP,Y2,Var2,Glue),
+  tr_verb(V,Y3,Var2),
+  atom_concat(Y1,Y2,Temp),
+  atom_concat(Temp,Glue,Temp2),
+  atom_concat(Temp2,Y3,Temp3),
+  atom_concat(Temp3,')',Y).
+
+
 s(sentence(NP,VP)) --> np(NP,Num), vp(VP,Num), sf.
 
 np(noun_phrase(DET,N),Num) --> det(DET,Num), noun(N,Num).
+np(noun_phrase(DET,A,N),Num) --> det(DET,Num), adj(A), noun(N,Num).
 np(noun_phrase(DET,N,R),Num) --> det(DET,Num), noun(N,Num), relcl(R,Num).
+np(noun_phrase(A,N),Num) --> adj(A), noun(N,Num).
 np(noun_phrase(N),Num) --> noun(N,Num).
 
 vp(verb_phrase(V,NP),Num) --> verb(V,Num), np(NP,_).
