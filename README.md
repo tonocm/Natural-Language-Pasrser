@@ -4,7 +4,6 @@ by: Hector Antonio Cardenas
 
 Files:
   - parser.pl
-  - 
   
 How to run:
   - Open SWI Prolog and load the file parser.pl
