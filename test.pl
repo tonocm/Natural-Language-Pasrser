@@ -81,6 +81,8 @@ noun(noun(boy),s) --> [boy].
 noun(noun(boy),p) --> [boys].
 noun(noun(girl),s) --> [girl].
 noun(noun(girl),p) --> [girls].
+noun(noun(flavor),s) --> [flavor].
+noun(noun(flavor),p) --> [flavors].
 noun(noun(government),s) --> [government].
 noun(noun(government),p) --> [governments].
 noun(noun(watermelon),s) --> [watermelon].
@@ -98,12 +100,18 @@ verb(verb(conscript),p) --> [conscript].
 verb(verb(conscript),s) --> [conscripts].
 verb(verb(like),s) --> [likes].
 verb(verb(like),p) --> [like].
+verb(verb(contain),p) --> [contain].
+verb(verb(contain),s) --> [contains].
 verb(verb(run),p) --> [run].
 verb(verb(run),s) --> [runs].
+verb(verb(eat),s) --> [eats].
+verb(verb(eat),p) --> [eat].
 beverb(be(is),s) --> [is].
 beverb(be(is),p) --> [are].
 adj(adjective(evil)) --> [evil].
+adj(adjective(pacifist)) --> [pacifist].
 adj(adjective(big)) --> [big].
+adj(adjective(divine)) --> [divine].
 adj(adjective(delicious)) --> [delicious].
 rel(relatve(that),_) --> [that].
 rel(relative(whom),s) --> [whom].
@@ -118,15 +126,14 @@ end --> [?].
 end --> [!].
 
 glue([all],'=>','all(x').
-glue([some],'& ','exists(x').
+glue([some],'&','exists(x').
 
 
 sent(X) :-
   read_in(S0),
   %S0 = [all,boys,like,some,girls,'.'],
   s(X,S0,[]),
-  write(X),
-  nl,
+  %write(X),
   tr_s(X,Y,1),
   write(Y).
 
@@ -149,7 +156,7 @@ tr_vp(VP,Y,Var) :-
 
 tr_vp(VP,Y,Var) :-
   VP =.. List,
-  append([verb_phrase],[BE,ADJ],List),
+  append([verb_phrase],[_,ADJ],List),
   tr_adj(ADJ,Y,Var).
 
 tr_adj(ADJ,Y,Var) :-
@@ -199,8 +206,7 @@ tr_np(NP,Y,Var,Glue) :-
   tr_noun(Noun,Y2,Var),
   tr_relcl(Relcl,Y3,Var),
   atom_concat(Y1,Y2,Temp),
-  atom_concat(Temp,'& ',Temp2),
-  atom_concat(Temp2,Y3,Y).
+  atom_concat(Temp,Y3,Y).
 
 tr_det(DET,Y,Var,Glue) :-
   DET =.. List,
@@ -223,21 +229,18 @@ tr_noun(N,Y,Var) :-
   atom_concat(Temp,Var,Temp2),
   atom_concat(Temp2,')',Y).
 
-tr_rel('&').
+tr_rel(' & ').
   
-
-%tr_vp(VP,Y,Var) :-
-
 tr_relcl(Relcl,Y,Var) :-
   Relcl =.. List,
-  append([rel_clause],[Rel,VP],List),
-  tr_rel(Y1).
+  append([rel_clause],[_,VP],List),
+  tr_rel(Y1),
   tr_vp(VP,Y2,Var),
   atom_concat(Y1,Y2,Y).
 
 tr_relcl(Relcl,Y,Var) :-
   Relcl =.. List,
-  append([rel_clause],[Rel,NP,V],List),
+  append([rel_clause],[_,NP,V],List),
   tr_rel(Y1),
   Var2 is Var + 1,
   tr_np(NP,Y2,Var2,Glue),
